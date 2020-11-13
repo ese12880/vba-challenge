@@ -1,0 +1,178 @@
+Sub stocks()
+
+    'loop over all worksheets
+    For Each ws In Worksheets
+    
+      'Create an array to hold: ticker, date, open, close for each min/max pair for each ticker
+      Dim ticker As String
+      Dim NumDiffTickers As Integer
+     
+      'define last row
+      lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+      
+      'loop through worksheet
+      
+      For i = 1 To lastRow
+          
+          If ticker <> ws.Cells(i, 1).Value Then
+          
+              NumDiffTickers = NumDiffTickers + 1
+          
+          End If
+          
+          ticker = ws.Cells(i, 1).Value
+          
+      Next i
+      
+      'set variables to loop through data and create new columns
+      
+       
+      ReDim Data(NumDiffTickers - 1, 4, 1) As Variant
+      
+      Dim tickerIndex As Integer
+      Dim earliestDate As Double
+      Dim latestDate As Double
+      Dim totalStockVolume As Double
+      
+      tickerIndex = -1
+      earliestDate = 30001231
+      latestDate = 0
+      totalStockVolume = 0
+              
+      'Loop over rows Combined Data
+      For i = 1 To lastRow
+      
+          cellValue = ws.Cells(i, 1).Value
+                  
+          If ticker <> cellValue Then
+          
+              'check for valid ticker index then
+              If (tickerIndex >= 0) Then
+              
+                  'store total stock volume in data for both earliest and latest
+                  Data(tickerIndex, 4, 0) = totalStockVolume
+                  Data(tickerIndex, 4, 1) = totalStockVolume
+                  
+              End If
+          
+              tickerIndex = tickerIndex + 1
+              earliestDate = 30001231
+              latestDate = 0
+              
+              'reset totalStockVolume to 0
+              totalStockVolume = 0
+              
+          End If
+          'computing and transfering data to new columns
+          
+          ticker = ws.Cells(i, 1).Value
+          
+          'compute total stock volume
+          totalStockVolume = totalStockVolume + Val(ws.Cells(i, 7).Value)
+          
+          
+          If Val(ws.Cells(i, 2).Value) < earliestDate Then
+          
+              earliestDate = Val(ws.Cells(i, 2).Value)
+      
+              'store ticker in data
+              Data(tickerIndex, 0, 0) = ws.Cells(i, 1).Value
+              
+              'store date in data
+              Data(tickerIndex, 1, 0) = ws.Cells(i, 2).Value
+              
+              'store open in data
+              Data(tickerIndex, 2, 0) = ws.Cells(i, 3).Value
+              
+              'store close in data
+              Data(tickerIndex, 3, 0) = ws.Cells(i, 6).Value
+              
+             
+              
+             
+              
+              
+          End If
+          
+          If Val(ws.Cells(i, 2).Value) > latestDate Then
+          
+              latestDate = Val(ws.Cells(i, 2).Value)
+          
+              'store ticker in data
+              Data(tickerIndex, 0, 1) = ws.Cells(i, 1).Value
+              
+              'store date in data
+              Data(tickerIndex, 1, 1) = ws.Cells(i, 2).Value
+              
+              'store open in data
+              Data(tickerIndex, 2, 1) = ws.Cells(i, 3).Value
+              
+              'store close in data
+              Data(tickerIndex, 3, 1) = ws.Cells(i, 6).Value
+          
+              
+             
+          
+          End If
+              
+      Next i
+      
+      'Create Output
+      Dim yearlyChange As Double
+      Dim percentChange As Double
+      
+      'Write Headers
+      ws.Range("I1").Value = "ticker"
+      ws.Range("J1").Value = "yearly change"
+      ws.Range("K1").Value = "Percent Change"
+      ws.Range("L1").Value = "Total Stock Volume"
+      
+      For i = 1 To tickerIndex
+      
+          'write ticker
+          ws.Cells(i + 1, 9).Value = Data(i, 0, 1)
+          
+          'compute yearly change
+          yearlyChange = Val(Data(i, 3, 1)) - Val(Data(i, 2, 1))
+          
+          'write Yearly Change
+          ws.Cells(i + 1, 10).Value = yearlyChange
+          
+          'compute Percentage change?
+          If (Data(i, 2, 1) <> "0") Then
+              percentChange = ((Val(Data(i, 3, 1)) - Val(Data(i, 2, 1))) / Val(Data(i, 2, 1))) * 100
+          End If
+          
+          'write Percentage change
+          ws.Cells(i + 1, 11).Value = percentChange
+                     
+                 
+          'write Total Stock Volume
+         ws.Cells(i + 1, 12).Value = Data(i, 4, 1)
+         
+          
+         
+      
+      'coloring, green positive, red negative
+      
+       If ws.Cells(i + 1, 10).Value >= 0 Then
+       
+       ws.Cells(i + 1, 10).Interior.ColorIndex = 4
+       
+       ElseIf ws.Cells(i + 1, 10).Value <= 0 Then
+       
+        ws.Cells(i + 1, 10).Interior.ColorIndex = 3
+        
+        End If
+        
+     Next i
+ 
+    Next ws
+    
+    
+    MsgBox ("Done!")
+    
+    
+End Sub
+
+
